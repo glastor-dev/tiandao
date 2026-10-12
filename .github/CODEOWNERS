@@ -1,0 +1,37 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# PROJECT SUPERNOVA - CODEOWNERS CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════
+# Purpose: Define ownership, accountability, and review protocols.
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# ═══════════════════════════════════════════════════════════════════════════
+
+# [ GLOBAL MAINTAINER ]
+# Acts as the default reviewer for all repository assets to ensure architectural integrity.
+* @glastor-dev
+
+# [ CORE ARCHITECTURE & INFRASTRUCTURE ]
+# Critical configuration files that define the build pipeline and environment settings.
+.github/ @glastor-dev
+package.json @glastor-dev
+package-lock.json @glastor-dev
+tsconfig.json @glastor-dev
+vite.config.ts @glastor-dev
+
+# [ SOURCE CODE & DOMAIN LOGIC ]
+# Core application modules, including API endpoints, UI components, and business services.
+/api/ @glastor-dev
+/components/ @glastor-dev
+/services/ @glastor-dev
+*.ts @glastor-dev
+*.tsx @glastor-dev
+
+# [ COMPLIANCE, GOVERNANCE & DOCS ]
+# Public-facing documentation and legal compliance files.
+README.md @glastor-dev
+CHANGELOG.md @glastor-dev
+CONTRIBUTING.md @glastor-dev
+LICENSE @glastor-dev
+
+# ═══════════════════════════════════════════════════════════════════════════
+# END OF CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════

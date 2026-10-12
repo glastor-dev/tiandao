@@ -1,0 +1,101 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build Application (Next.js)
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+          tar -czf tiandao-build.tar.gz .next/standalone .next/static public package.json
+
+      - name: Copy Build to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          source: "tiandao-build.tar.gz"
+          target: "/root/tiandao"
+
+      - name: Deploy on Server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          NEON_DB_URL: ${{ secrets.NEON_DB_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          envs: NEON_DB_URL,RESEND_API_KEY,RESEND_FROM_EMAIL,TURNSTILE_SECRET_KEY,MEILI_MASTER_KEY,JWT_SECRET,ADMIN_PASSWORD,GITHUB_TOKEN
+          script: |
+            set -euo pipefail
+            mkdir -p ~/tiandao
+            cd ~/tiandao
+            
+            tar -xzf tiandao-build.tar.gz
+            rm -f tiandao-build.tar.gz
+            
+            cat << 'EOF' > Dockerfile
+            FROM node:20-alpine
+            WORKDIR /app
+            COPY .next/standalone ./
+            COPY .next/static ./.next/static
+            COPY public ./public
+            EXPOSE 3000
+            ENV PORT=3000
+            ENV HOSTNAME="0.0.0.0"
+            CMD ["node", "server.js"]
+            EOF
+
+            cat << 'EOF' > .env
+            GITHUB_TOKEN=$GITHUB_TOKEN
+            NEON_DB_URL=$NEON_DB_URL
+            DATABASE_URL=$NEON_DB_URL
+            RESEND_API_KEY=$RESEND_API_KEY
+            RESEND_FROM_EMAIL=$RESEND_FROM_EMAIL
+            TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY
+            MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+            JWT_SECRET=$JWT_SECRET
+            ADMIN_PASSWORD=$ADMIN_PASSWORD
+            EOF
+
+            if command -v docker >/dev/null 2>&1; then
+              docker build -t tiandao-app:latest .
+              docker stop tiandao-container 2>/dev/null || true
+              docker rm tiandao-container 2>/dev/null || true
+              docker run -d --name tiandao-container --restart unless-stopped -p 3000:3000 --env-file .env tiandao-app:latest
+            fi
