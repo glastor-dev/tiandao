@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Tiandao"
+type: software
+version: "1.0.0"
+date-released: "2026-07-05"
+authors:
+  - family-names: "Cardoso"
+    given-names: "Andrés Antonio"
+    email: "glastor.info@gmail.com"
+repository-code: "https://github.com/glastor-dev/tiandao"
+url: "https://github.com/glastor-dev/tiandao"
+license: AGPL-3.0
+keywords:
+  - Rust
+  - React
+  - Vite
+  - TailwindCSS
+  - High Performance
+  - B2B
+abstract: "Plataforma web B2B de alto rendimiento construida con una arquitectura dual: un Frontend dinámico en React/Vite con Framer Motion, y un Backend ultrarrápido y seguro en Rust."
