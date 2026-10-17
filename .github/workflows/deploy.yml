@@ -38,7 +38,7 @@ jobs:
 
       - name: Copy Build to Server
         if: ${{ env.DO_HOST != '' }}
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         env:
           DO_HOST: ${{ secrets.DO_HOST }}
         with:
