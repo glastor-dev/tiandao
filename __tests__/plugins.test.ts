@@ -3,8 +3,18 @@ import { fetchAchievementsData } from '@/plugins/achievements';
 import { fetchSponsorsData } from '@/plugins/sponsors';
 import { fetchLiveStatusData } from '@/plugins/livestatus';
 import { fetchPageSpeedData } from '@/plugins/pagespeed';
+import { fetchStreakData } from '@/plugins/streak';
 
 describe('Plugins Data Fetchers', () => {
+  it('fetchStreakData returns structured streak metrics', async () => {
+    const data = await fetchStreakData('ricsg');
+    expect(data).toHaveProperty('currentStreak');
+    expect(data).toHaveProperty('longestStreak');
+    expect(data).toHaveProperty('totalContributions');
+    expect(typeof data.currentStreak).toBe('number');
+    expect(typeof data.longestStreak).toBe('number');
+    expect(typeof data.totalContributions).toBe('number');
+  });
   it('fetchAchievementsData returns mocked achievements', async () => {
     const data = await fetchAchievementsData('ricsg');
     expect(data.achievements).toBeInstanceOf(Array);

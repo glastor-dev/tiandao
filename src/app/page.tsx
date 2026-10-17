@@ -56,6 +56,10 @@ export default function Home() {
   const [liveStatusTimezone, setLiveStatusTimezone] = useState("");
   const [bgImage, setBgImage] = useState("");
   const [customColor, setCustomColor] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [cardTitle, setCardTitle] = useState("");
+  const [showStreak, setShowStreak] = useState(false);
+  const [statusPill, setStatusPill] = useState("");
   
   const [previewUrl, setPreviewUrl] = useState(() => {
     const params = new URLSearchParams({
@@ -116,6 +120,10 @@ export default function Home() {
       ...(liveStatusTimezone ? { livestatus: liveStatusTimezone } : {}),
       ...(bgImage ? { bg_image: bgImage } : {}),
       ...(customColor ? { custom_color: customColor.replace("#", "") } : {}),
+      ...(logoUrl ? { logo: logoUrl } : {}),
+      ...(cardTitle ? { title: cardTitle } : {}),
+      streak: showStreak.toString(),
+      ...(statusPill ? { status: statusPill } : {}),
       _t: Date.now().toString(),
     });
     
@@ -157,13 +165,99 @@ export default function Home() {
     return `${previewUrl}${separator}format=${format}`;
   };
 
+  const handleDownload = async (format: "svg" | "png") => {
+    try {
+      toast.info(`Preparando descarga ${format.toUpperCase()}...`);
+      const exportUrl = getExportUrl(format);
+      const res = await fetch(exportUrl);
+      if (!res.ok) throw new Error("Error fetching file");
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `tiandao-metrics-${username || "profile"}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success(`Descarga completada: ${format.toUpperCase()}`);
+    } catch {
+      toast.error("Error al descargar el archivo");
+    }
+  };
+
+  const applyPreset = (preset: "minimalist" | "full" | "gamer" | "devsecops") => {
+    if (preset === "minimalist") {
+      setTheme("dark");
+      setShowLanguages(true);
+      setShowStreak(true);
+      setShowStargazers(false);
+      setShowHabits(false);
+      setShowStarred(false);
+      setShowTopics(false);
+      setShowLicenses(false);
+      setShowIssues(false);
+      setShowAchievements(false);
+      setShowPeople(false);
+      setShowIsocalendar(false);
+      setCardTitle("For user accounts");
+      setStatusPill("🟢 Available for hire");
+    } else if (preset === "full") {
+      setTheme("tokyo-night");
+      setShowLanguages(true);
+      setShowStargazers(true);
+      setShowStreak(true);
+      setShowHabits(true);
+      setShowStarred(true);
+      setShowTopics(true);
+      setShowLicenses(true);
+      setShowIssues(true);
+      setShowAchievements(true);
+      setShowPeople(false);
+      setShowIsocalendar(true);
+      setCardTitle("Full Developer Showcase");
+      setStatusPill("🚀 Full Stack & AI");
+    } else if (preset === "gamer") {
+      setTheme("cyberpunk");
+      setShowLanguages(true);
+      setShowStreak(true);
+      setShowAchievements(true);
+      setShowHabits(true);
+      setShowStargazers(true);
+      setShowLicenses(false);
+      setShowIssues(false);
+      setShowStarred(false);
+      setShowTopics(false);
+      setShowPeople(false);
+      setShowIsocalendar(false);
+      setCardTitle("Cyber Terminal");
+      setStatusPill("⚡ Level 99 Dev");
+    } else if (preset === "devsecops") {
+      setTheme("catppuccin");
+      setShowLanguages(true);
+      setShowLicenses(true);
+      setShowIssues(true);
+      setShowStreak(true);
+      setShowStargazers(true);
+      setShowHabits(false);
+      setShowStarred(false);
+      setShowTopics(false);
+      setShowAchievements(false);
+      setShowPeople(false);
+      setShowIsocalendar(false);
+      setCardTitle("DevSecOps & Compliance");
+      setStatusPill("🛡️ Audited & Hardened");
+    }
+    toast.success(`Preset aplicado: ${preset.toUpperCase()}`);
+  };
+
   return (
     <main className="container">
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem", paddingBottom: "1.5rem", borderBottom: "1px solid var(--border)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/icons/favicon-32x32.png" alt="Logo" width={32} height={32} style={{ borderRadius: "8px" }} />
-          <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "-0.02em" }}>Tiandao <span style={{ color: "var(--muted-foreground)", fontWeight: "normal" }}>Generator</span></span>
+          <span style={{ fontSize: "20px", fontWeight: "bold", letterSpacing: "-0.02em" }}>GLASTOR®</span>
         </div>
         <Link href="/pro" style={{ display: "inline-flex", alignItems: "center", padding: "8px 16px", backgroundColor: "rgba(234, 74, 170, 0.1)", border: "1px solid #ea4aaa", color: "#ea4aaa", borderRadius: "8px", fontWeight: "bold", textDecoration: "none", fontSize: "14px", transition: "all 0.2s" }}>
           ⚡ Ser PRO
@@ -171,7 +265,7 @@ export default function Home() {
       </nav>
 
       <header className="header" style={{ marginBottom: "3rem" }}>
-        <h1>Dynamic GitHub SVG Profile</h1>
+        <h1>Perfil SVG Dinámico para GitHub</h1>
         <p>Crea impresionantes y dinámicas métricas para el README de tu perfil de GitHub. Impulsado por Edge Computing.</p>
       </header>
 
@@ -192,6 +286,15 @@ export default function Home() {
             </button>
           </h2>
           
+          {/* 1-Click Presets Toolbar */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px", padding: "10px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid var(--border)", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", fontWeight: "bold", color: "var(--accent)" }}>⚡ Presets:</span>
+            <button type="button" onClick={() => applyPreset("minimalist")} style={{ padding: "4px 10px", fontSize: "11px", borderRadius: "14px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "var(--foreground)", cursor: "pointer" }}>👔 Minimalist</button>
+            <button type="button" onClick={() => applyPreset("full")} style={{ padding: "4px 10px", fontSize: "11px", borderRadius: "14px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "var(--foreground)", cursor: "pointer" }}>🚀 Full Showcase</button>
+            <button type="button" onClick={() => applyPreset("gamer")} style={{ padding: "4px 10px", fontSize: "11px", borderRadius: "14px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "var(--foreground)", cursor: "pointer" }}>🎮 Cyberpunk</button>
+            <button type="button" onClick={() => applyPreset("devsecops")} style={{ padding: "4px 10px", fontSize: "11px", borderRadius: "14px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.05)", color: "var(--foreground)", cursor: "pointer" }}>🛡️ DevSecOps</button>
+          </div>
+
           <form onSubmit={handleUpdate}>
             
             <Section title="⚙️ Ajustes Básicos" defaultOpen={true}>
@@ -202,16 +305,33 @@ export default function Home() {
               <div className="form-group">
                 <label htmlFor="theme">Tema Visual</label>
                 <select id="theme" className="input-field" value={theme} onChange={(e) => setTheme(e.target.value)}>
-                  <option value="dark">Dark (Premium)</option>
-                  <option value="light">Light</option>
-                  <option value="hacker">Hacker (Matrix)</option>
+                  <option value="dark">Dark (Default)</option>
+                  <option value="tokyo-night">Tokyo Night 🌌</option>
+                  <option value="catppuccin">Catppuccin Mocha ☕</option>
+                  <option value="dracula">Dracula 🧛</option>
+                  <option value="nord">Nord ❄️</option>
+                  <option value="cyberpunk">Cyberpunk / Synthwave ⚡</option>
+                  <option value="hacker">Hacker (Matrix) 💻</option>
+                  <option value="light">Light ☀️</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="statusPill">Status Badge / Disponibilidad</label>
+                <input id="statusPill" type="text" className="input-field" value={statusPill} onChange={(e) => setStatusPill(e.target.value)} placeholder="e.g. 🟢 Open to work" />
               </div>
               <div className="form-group">
                 <label htmlFor="token" style={{ display: 'flex', justifyContent: 'space-between' }}>
                   GitHub Token <span style={{ fontSize: '10px', color: 'var(--accent)' }}>Opcional</span>
                 </label>
                 <input id="token" type="password" className="input-field" value={githubToken} onChange={(e) => setGithubToken(e.target.value)} placeholder="ghp_..." />
+              </div>
+              <div className="form-group">
+                <label htmlFor="cardTitle">Título del Encabezado</label>
+                <input id="cardTitle" type="text" className="input-field" value={cardTitle} onChange={(e) => setCardTitle(e.target.value)} placeholder="For user accounts" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="logoUrl">Logo URL (Encabezado)</label>
+                <input id="logoUrl" type="text" className="input-field" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" />
               </div>
             </Section>
 
@@ -265,6 +385,7 @@ export default function Home() {
                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showIcons} onChange={(e) => setShowIcons(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> Show Icons</label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showLanguages} onChange={(e) => setShowLanguages(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> Top Languages</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showStreak} onChange={(e) => setShowStreak(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> 🔥 Commit Streaks (Rachas)</label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showStargazers} onChange={(e) => setShowStargazers(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> 🌟 Stargazers & Forks</label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showHabits} onChange={(e) => setShowHabits(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> 📊 Coding Habits</label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={showStarred} onChange={(e) => setShowStarred(e.target.checked)} style={{ accentColor: 'var(--primary)', width: '16px', height: '16px' }} /> ⭐ Starred Repos</label>
@@ -377,12 +498,20 @@ export default function Home() {
                 >
                   🔄 {loading ? 'Cargando...' : 'Actualizar'}
                 </button>
-                <a href={getExportUrl("png")} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: 'inline-block', backgroundColor: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', transition: 'opacity 0.2s' }}>
-                  Export PNG
-                </a>
-                <a href={getExportUrl("svg")} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: 'inline-block', backgroundColor: 'var(--secondary)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: '1px solid var(--border)' }}>
-                  Export SVG
-                </a>
+                <button 
+                  type="button" 
+                  onClick={() => handleDownload("png")} 
+                  style={{ textDecoration: 'none', backgroundColor: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                >
+                  📥 Descargar PNG
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleDownload("svg")} 
+                  style={{ textDecoration: 'none', backgroundColor: 'var(--secondary)', color: 'white', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', border: '1px solid var(--border)', cursor: 'pointer' }}
+                >
+                  📥 Descargar SVG
+                </button>
               </div>
             </h2>
             <div className="preview-box">

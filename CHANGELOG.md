@@ -32,14 +32,30 @@ Este proyecto se adhiere a:
 
 ### ✨ Added
 
-- **Navegación Core:** Sistema de rutas adaptado a las necesidades B2B e E-Commerce (Inicio `/`, Tienda `/tienda`, Desarrollo en Rust `/home`).
-- **Licencia:** Establecimiento de la licencia `AGPL-3.0` para garantizar la apertura y cooperación del software.
-- **Metadata Corporativa:** Actualización de los datos del Founder ("CEO & Arquitecto Jefe") en la sección de Nosotros.
+- **Métricas Base 100% Dinámicas:** Módulo de estadísticas base (`fetchBaseData`) en `src/plugins/base/index.ts` que extrae en tiempo real repositorios públicos, preferencia de licencia calculada por frecuencia (`spdx_id`), conteo de releases, paquetes publicados, sponsors, total de estrellas acumuladas y forks acumulados.
+- **Actividad Reciente (Mini Heatmap):** Renderizado de los 9 bloques de actividad reciente mapeando los eventos y commits reales de los últimos 9 días del usuario.
+- **Personalización de Logo y Título:** Soporte para parámetros `logo` (URL de imagen/logo) y `title` (título personalizado de cabecera) en la API de métricas y el configurador web con previsualización en vivo.
+- **Widget de Commit Streaks:** Módulo de rachas de GitHub (`StreakModule` y `fetchStreakData`) con cálculo de racha actual (`Current Streak`), racha histórica máxima (`Longest Streak`) y total de contribuciones anuales con soporte GraphQL y fallback REST.
+- **Paleta de 5 Nuevos Temas Populares:** Incorporación de temas `tokyo-night`, `catppuccin` (Mocha), `dracula`, `nord` y `cyberpunk` (synthwave) tanto en el generador SVG como en el selector UI, ampliando la biblioteca a 8 temas disponibles.
+- **Toolbar de Presets de 1-Clic:** Plantillas preconfiguradas en el panel web (*Minimalist PRO*, *Full Showcase*, *Cyberpunk*, *DevSecOps*) para activar combinaciones recomendadas con un solo clic.
+- **Descarga Directa de SVG y PNG:** Botones de descarga en el cliente que generan y descargan el archivo formateado (`tiandao-metrics-{usuario}.svg/png`) sin recargar la página.
+- **Status Badge de Disponibilidad:** Parámetro `status` para incrustar un pill decorativo de estado personalizable (ej. `🟢 Open to work`, `💼 Available for hire`).
+- **Pipeline DevSecOps con Nemesis:** Nuevo workflow `.github/workflows/security-audit.yml` y configuración `.nemesis.yml` para auditoría continua de secretos (Gitleaks), código estático SAST (Semgrep), dependencias SCA (Trivy), higiene de repositorio y reportes SARIF.
+- **Caché en Memoria Resiliente (SWR):** Mecanismo Stale-While-Revalidate en memoria que almacena los renderizados exitosos para prevenir imágenes rotas si la API de GitHub sufre límites de cuota temporales.
+- **Suite de Pruebas Unitarias:** Nuevos tests unitarios en `__tests__/plugins.test.ts` para verificar la extracción y cálculo de rachas (`fetchStreakData`), alcanzando 11 pruebas automatizadas exitosas.
+
+### 🔄 Changed
+
+- **Identidad de Marca:** Actualización de la barra de navegación superior izquierda con el sello corporativo **GLASTOR®**.
+- **Localización al Español:** Traducción del encabezado principal en la UI a *"Perfil SVG Dinámico para GitHub"*.
 
 ### 🐛 Fixed
 
-- **Base de Datos & Panel Admin:** Resolución de _500 Database Error_ oculto (causado por colisiones de valores vacíos en el índice único de slugs de Postgres) que impedía guardar ediciones de precios en `ProductEditorModal`.
-- **Interacciones de UI:** Refactorización de inputs numéricos en el administrador para admitir decimales fluidos (`step="any"`) previniendo cuelgues locales por `NaN`.
+- **Tolerancia a Fallos en GitHub API:** Fallback automático a peticiones públicas sin cabecera `Authorization` cuando el `GITHUB_TOKEN` configurado responde `401 Bad credentials` (token expirado o inválido), impidiendo que las métricas caigan a cero.
+
+### 🔒 Security
+
+- **Validación Estricta de URLs de Imagen (SSRF/XSS):** Sanitización y validación exhaustiva de URLs externas en el parámetro `logo` (`isValidImageUrl`) para restringir protocolos a HTTP/HTTPS y formatos seguros de imagen.
 
 ---
 

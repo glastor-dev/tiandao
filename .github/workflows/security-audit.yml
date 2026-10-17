@@ -1,0 +1,45 @@
+name: Nemesis Security & Hygiene Audit
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  nemesis-audit:
+    name: Nemesis Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Nemesis Auditor
+        uses: glastor-dev/nemesis@master
+        with:
+          diff-mode: ${{ github.event_name == 'pull_request' }}
+          diff-base-ref: 'origin/master'
+          scan-secrets: "true"
+          scan-sast: "true"
+          scan-sca: "true"
+          scan-hygiene: "true"
+          scan-licenses: "true"
+          generate-sbom: "true"
+          upload-sarif: "true"
+          fail-on-critical: "false"

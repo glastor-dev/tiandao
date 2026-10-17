@@ -23,6 +23,17 @@ export interface TopLanguage {
   color: string;
 }
 
+export interface BaseData {
+  repositories: number;
+  licensePreference: string;
+  releases: number;
+  packages: number;
+  sponsors: number;
+  stars: number;
+  forks: number;
+  activityDots: number[];
+}
+
 export interface StargazersData {
   stars: number;
   forks: number;
@@ -30,6 +41,12 @@ export interface StargazersData {
 
 export interface HabitsData {
   days: number[]; // e.g. [sun, mon, tue, wed, thu, fri, sat]
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  totalContributions: number;
 }
 
 export interface StarredData {

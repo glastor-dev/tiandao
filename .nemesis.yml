@@ -1,0 +1,15 @@
+version: "1"
+
+settings:
+  maxFileSizeMb: 15
+  requireLicense: true
+
+ignore:
+  - path: "node_modules/**"
+    reason: "Third-party dependencies managed by Bun and npm"
+
+  - path: ".next/**"
+    reason: "Next.js compilation output and build artifacts"
+
+  - path: "src/app/api/metrics/Roboto-Regular.ttf"
+    reason: "Bundled TrueType font binary for Satori SVG image rendering"
