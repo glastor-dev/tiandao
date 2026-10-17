@@ -37,7 +37,10 @@ jobs:
           tar -czf tiandao-build.tar.gz .next/standalone .next/static public package.json
 
       - name: Copy Build to Server
+        if: ${{ env.DO_HOST != '' }}
         uses: appleboy/scp-action@v0.1.7
+        env:
+          DO_HOST: ${{ secrets.DO_HOST }}
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
@@ -46,8 +49,10 @@ jobs:
           target: "/root/tiandao"
 
       - name: Deploy on Server
+        if: ${{ env.DO_HOST != '' }}
         uses: appleboy/ssh-action@v1.0.3
         env:
+          DO_HOST: ${{ secrets.DO_HOST }}
           NEON_DB_URL: ${{ secrets.NEON_DB_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}

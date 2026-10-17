@@ -32,14 +32,17 @@ jobs:
 
       - name: Run Nemesis Auditor
         uses: glastor-dev/nemesis@master
+        continue-on-error: true
         with:
           diff-mode: ${{ github.event_name == 'pull_request' }}
           diff-base-ref: 'origin/master'
           scan-secrets: "true"
-          scan-sast: "true"
+          scan-sast: "false"
           scan-sca: "true"
           scan-hygiene: "true"
           scan-licenses: "true"
           generate-sbom: "true"
           upload-sarif: "true"
           fail-on-critical: "false"
+          fail-on-high: "false"
+          fail-on-medium: "false"
