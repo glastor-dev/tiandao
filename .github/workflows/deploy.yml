@@ -50,7 +50,7 @@ jobs:
 
       - name: Deploy on Server
         if: ${{ env.DO_HOST != '' }}
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         env:
           DO_HOST: ${{ secrets.DO_HOST }}
           NEON_DB_URL: ${{ secrets.NEON_DB_URL }}
